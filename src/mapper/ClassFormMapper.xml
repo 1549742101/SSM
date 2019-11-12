@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+	namespace：命名空间，其值为某一个dao层类的具体路径
+ -->
+<mapper namespace="/">
+    <!-- sql语句保存在Mybatis的局部配置文件中 -->
+    <!--
+		select标签存放查询语句(List<User>)
+			id:在整个配置文件中id值必须唯一，其值与dao层类中的方法名保持一致
+			resultType：指定当前sql查询语句返回的数据类型。类型不是为sql语句的最终类型，而是某一条数据的类型
+	 -->
+    <resultMap id="findStudentByClass" type="vo.ClassForm">
+        <id column="cno" property="no"></id>
+        <result property="name"  column="cname"></result>
+        <collection property="sflist" column="student" javaType="vo.StudentForm">
+            <id column="no" property="no"></id>
+            <result property="name" column="name"></result>
+        </collection>
+    </resultMap>
+    <select id="findStudentAndClass"  resultMap="findStudentByClass">
+        SELECT student.no as no,student.name as name,classno.no as cno,classno.name as cname FROM student join classno on student.classno = classno.no;
+    </select>
+    <!--<select id="findClassAndStudent" resultMap="findStudentAndClass">
+        SELECT student.no as no,student.name as name,classno.no as cno,classno.name as cname FROM student join classno on student.classno = classno.no;
+    </select>-->
+    <resultMap id="findStudentByClasses" type="vo.Student">
+        <id column="no" property="no"></id>
+        <result property="name"  column="name"></result>
+        <association property="classes" column="classno" javaType="vo.Classes">
+            <id column="classno" property="no"></id>
+        </association>
+    </resultMap>
+    <select id="findStudentByClassAndS" resultMap="findStudentByClasses" parameterType="vo.Student">
+            SELECT student.no,student.name,student.classno FROM student join classes on student.classno = classes.no
+            WHERE
+        <choose>
+            <when test="no!=null">
+                student.no = #{no}
+            </when>
+            <when test="name!=null">
+                student.name = #{name}
+            </when>
+            <otherwise>
+                1=1
+            </otherwise>
+        </choose>
+        AND
+        <choose>
+            <when test="classes.no!=null">
+                classes.no = ${classes.no}
+            </when>
+            <otherwise>
+                1=1
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>
